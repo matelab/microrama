@@ -10,7 +10,7 @@
     let
       systems = [ "aarch64-linux" "i686-linux" "x86_64-linux" ];
       overlays = [ (import rust-overlay) ];
-      program_name = "bevy_nix_vscode_template";
+      program_name = "microrama";
     in builtins.foldl' (outputs: system:
 
       let
@@ -78,7 +78,7 @@
                   --prefix LD_LIBRARY_PATH : ${
                     pkgs.lib.makeLibraryPath runtime-deps
                   } \
-                  --set CARGO_MANIFEST_DIR $out/share/bevy_nix_vscode_template
+                  --set CARGO_MANIFEST_DIR $out/share/${program_name}
                 mkdir -p $out/share/${program_name}
                 cp -a assets $out/share/${program_name}'';
               patchPhase = ''

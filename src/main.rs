@@ -11,34 +11,38 @@ fn main() {
         .add_plugins(FrameTimeDiagnosticsPlugin::default())
         .add_systems(Update, close_on_esc)
         .add_systems(Startup, setup)
-        .add_systems(Update, rotate)
         .run();
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn setup(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut ambient_light: ResMut<AmbientLight>,
+) {
     // Camera
     commands.spawn((
-        Camera2d,
-        OrthographicProjection {
-            scaling_mode: ScalingMode::AutoMin {
-                min_width: 1.0,
-                min_height: 1.0,
+        Camera3d::default(),
+        Projection::from(OrthographicProjection {
+            scaling_mode: ScalingMode::FixedVertical {
+                viewport_height: 6.0,
             },
-            ..OrthographicProjection::default_2d()
-        },
+            ..OrthographicProjection::default_3d()
+        }),
+        Transform::from_xyz(5.0, 5.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
     ));
 
-    // Sprite
-    let img = asset_server.load("bevy.png");
-    let mut logo = Sprite::from_image(img);
-    logo.custom_size = Some(Vec2::new(0.6, 0.6));
-    commands.spawn(logo);
-}
+    commands.spawn(SceneRoot(asset_server.load(
+        GltfAssetLabel::Scene(0).from_asset("kenney_td/Models/glb/tile-tree.glb"),
+    )));
+    commands.spawn((
+        SceneRoot(
+            asset_server
+                .load(GltfAssetLabel::Scene(0).from_asset("kenney_td/Models/glb/tile-end.glb")),
+        ),
+        Transform::from_xyz(1.0, 0.0, 0.0),
+    ));
 
-fn rotate(mut query: Query<&mut Transform, With<Sprite>>, time: Res<Time>) {
-    for mut tr in &mut query {
-        tr.rotate_local_z(-time.delta_secs());
-    }
+    ambient_light.brightness = 1500.0;
 }
 
 pub fn close_on_esc(
